@@ -1,0 +1,14 @@
+version: '3.3'
+services:
+    rsshub:
+        container_name: 'rsshub'
+        restart: always
+        ports:
+            - '1200:1200'
+        image: diygod/rsshub
+    biliup_rsspush_wechat:
+        container_name: 'biliup_rsspush_wechat'
+        restart: always
+        volumes:
+            - './:/app'
+        image: buyfakett/biliup_rsspush_wechat:latest

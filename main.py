@@ -1,5 +1,5 @@
 #coding=utf-8
-import random, datetime, os, sys, json, requests, logging, feedparser, schedule
+import random, datetime, os, sys, json, requests, logging, feedparser, schedule, time
 from common.yaml_util import read_yaml, read_all_yaml, write_yaml_value
 
 
@@ -147,5 +147,6 @@ if __name__ == "__main__":
     try:
         while True:
             schedule.run_pending()
+            time.sleep(1)
     except:
         pass

@@ -1,50 +1,34 @@
 #coding=utf-8
-import random, datetime, time, os, sys, json, requests, feedparser
+import random, datetime, os, sys, json, requests, logging, feedparser, schedule
+from common.yaml_util import read_yaml, read_all_yaml, write_yaml_value
 
 
-# 检测的主播
-uid = "11073"
+logging.basicConfig(level=logging.INFO)
 
-# 检测的时间(分钟）
-detection_time = 1
-
-# 模板id
-template_id = "fE51ho"
-
-# rsshub服务的ip
-ip = ""
-
-# appId
-app_id = "wxd4072"
-# appSecret
-app_secret = "64ff49a3631c"
 
 # 发送的用户的id
-to_user_ids = ["oSZLh7E"]
+to_user_ids = ["oSZL15qqZnwLMnR5XrNIdpPQfh7E"]
 
 # 公众号的跳转链接
-jump_url = "https://space.bilibili.com/" + uid + "/dynamic"
+jump_url = "https://space.bilibili.com/" + str(read_yaml('uid')) + "/dynamic"
 
-bili_url = "http://" + ip + ":1200/bilibili/user/dynamic/" + uid
-
-
-def write():
-    f = open("database.txt", "w", encoding="utf-8")
-    f.write(feedparser.parse(bili_url)['entries'][0]['title'])
-    f.close()
+bili_url = "http://" + read_yaml('ip') + ":1200/bilibili/user/dynamic/" + str(read_yaml('uid'))
 
 
 def get_rss():
     d = feedparser.parse(bili_url)
     post_data_detail = d['entries'][0]['summary']
     post_data_title = d['entries'][0]['title']
+    post_data_link = d['entries'][0]['link']
     post_data = {
         "title": post_data_title,
-        "detail": post_data_detail
+        "detail": post_data_detail,
+        "link": post_data_link
     }
     return json.dumps(post_data, ensure_ascii=False)
 
-def get_access_token(app_id, app_secret):
+
+def get_wechat_access_token(app_id, app_secret):
     # appId
     app_id = app_id
     # appSecret
@@ -54,10 +38,11 @@ def get_access_token(app_id, app_secret):
     try:
         access_token = requests.get(post_url).json()['access_token']
     except KeyError:
-        print("获取access_token失败，请检查app_id和app_secret是否正确")
+        logging.error('获取access_token失败，请检查app_id和app_secret是否正确')
         os.system("pause")
         sys.exit(1)
     return access_token
+
 
 def get_color():
     # 往list中填喜欢的颜色即可
@@ -65,10 +50,10 @@ def get_color():
     return random.choice(color_list)
 
 
-def send_message(to_user, now_time, title, detail, url, wx_post_url):
+def send_wechat_message(to_user, now_time, title, detail, url, wx_post_url):
     data = {
         "touser": to_user,
-        "template_id": template_id,
+        "template_id": read_yaml('template_id'),
         "url": url,
         "topcolor": "#FF0000",
         "data": {
@@ -105,35 +90,62 @@ def send_message(to_user, now_time, title, detail, url, wx_post_url):
     }
     response = requests.post(wx_post_url, headers=headers, json=data).json()
     if response["errcode"] == 40037:
-        print("推送消息失败，请检查模板id是否正确")
+        logging.error('推送消息失败，请检查模板id是否正确')
     elif response["errcode"] == 40036:
-        print("推送消息失败，请检查模板id是否为空")
+        logging.error('推送消息失败，请检查模板id是否为空')
     elif response["errcode"] == 40003:
-        print("推送消息失败，请检查微信号是否正确")
+        logging.error('推送消息失败，请检查微信号是否正确')
     elif response["errcode"] == 0:
-        print("推送消息成功")
+        logging.info('推送消息成功')
     else:
-        print(response)
+        logging.info(response)
+
+
+def send_ding_message(access_token, keyword, now_time, title, link):
+    test_data = {
+        "msgtype": "link",
+        "link": {
+            "text": title,
+            "title": keyword,
+            "picUrl": "",
+            "messageUrl": link
+        }
+    }
+    test_url = "https://oapi.dingtalk.com/robot/send?access_token=" + access_token
+    response = requests.post(test_url, json=test_data)
+    if json.loads(response.text)['errcode'] == 0:
+        logging.info(now_time + "推送" + json.loads(response.text)['errmsg'])
+    else:
+        logging.error('推送错误')
 
 
 def main():
     now_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    ACCESS_TOKEN = get_access_token(app_id, app_secret)
-    wx_post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + ACCESS_TOKEN
     rss_data = json.loads(get_rss())
+    title = rss_data['title']
+    detail = rss_data['detail']
+    link = rss_data['link']
 
-    f = open("database.txt", "r", encoding="utf-8")
-    data = f.read()
-    f.close()
-    if feedparser.parse(bili_url)['entries'][0]['title'] == data:
-        print(now_time + "主播没有发新动态")
+    if title == read_yaml('title'):
+        logging.info(now_time + "主播没有发新动态")
     else:
-        write()
-        for i in to_user_ids:
-            send_message(i, now_time, rss_data['title'], rss_data['detail'], jump_url, wx_post_url)
+        data = read_all_yaml()
+        data.update({'title': title})
+        write_yaml_value(data)
+        if read_yaml('send_type') == 'wechat':
+            ACCESS_TOKEN = get_wechat_access_token(read_yaml('app_id'), read_yaml('app_secret'))
+            wx_post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + ACCESS_TOKEN
+            for i in to_user_ids:
+                send_wechat_message(i, now_time, title, detail, jump_url, wx_post_url)
+        elif read_yaml('send_type') == 'ding':
+            send_ding_message(read_yaml('ding_access_token'), read_yaml('ding_keyword'), now_time, title, link)
 
 
 if __name__ == "__main__":
-    while True:
-        main()
-        time.sleep(detection_time * 60)
+    main()
+    schedule.every(eval(read_yaml('detection_time'))).seconds.do(main)
+    try:
+        while True:
+            schedule.run_pending()
+    except:
+        pass

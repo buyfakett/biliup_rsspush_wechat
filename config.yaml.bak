@@ -1,0 +1,24 @@
+# 检测的主播
+uid: 11073
+# 检测的时间(分钟）
+detection_time: 1 * 60
+
+# 钉钉推送还是微信测试号推送(钉钉：ding，微信测试号：wechat)
+send_type: ding
+# 钉钉参数
+access_token: 259
+# 钉钉自定义关键词
+ding_keyword: test
+
+# 微信测试号参数
+# 模板id
+template_id: fE51ho
+# rsshub服务的ip
+ip: 0.0.0.0
+# appId
+app_id: wxd4072
+# appSecret
+app_secret: 64ff49a3631c
+
+# 检测主播的动态title
+title:

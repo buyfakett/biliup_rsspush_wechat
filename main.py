@@ -2,8 +2,12 @@
 import random, datetime, os, sys, json, requests, logging, feedparser, schedule, time
 from common.yaml_util import read_yaml, read_all_yaml, write_yaml_value
 
+test = False
 
-logging.basicConfig(level=logging.INFO)
+if test:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 
 # 发送的用户的id
@@ -114,7 +118,7 @@ def send_ding_message(access_token, keyword, now_time, title, link):
     test_url = "https://oapi.dingtalk.com/robot/send?access_token=" + access_token
     response = requests.post(test_url, json=test_data)
     if json.loads(response.text)['errcode'] == 0:
-        logging.info(now_time + "推送" + json.loads(response.text)['errmsg'])
+        logging.info(now_time + "推送钉钉：" + json.loads(response.text)['errmsg'])
     else:
         logging.error('推送错误')
 
@@ -131,7 +135,8 @@ def main():
     else:
         data = read_all_yaml()
         data.update({'title': title})
-        write_yaml_value(data)
+        if not test:
+            write_yaml_value(data)
         if read_yaml('send_type') == 'wechat':
             ACCESS_TOKEN = get_wechat_access_token(read_yaml('app_id'), read_yaml('app_secret'))
             wx_post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + ACCESS_TOKEN
@@ -143,10 +148,11 @@ def main():
 
 if __name__ == "__main__":
     main()
-    schedule.every(eval(read_yaml('detection_time'))).seconds.do(main)
-    try:
-        while True:
-            schedule.run_pending()
-            time.sleep(1)
-    except:
-        pass
+    if not test:
+        schedule.every(eval(read_yaml('detection_time'))).seconds.do(main)
+        try:
+            while True:
+                schedule.run_pending()
+                time.sleep(1)
+        except:
+            pass

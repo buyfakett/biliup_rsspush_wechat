@@ -29,7 +29,7 @@ def get_rss():
     return json.dumps(post_data, ensure_ascii=False)
 
 
-def get_wechat_access_token(app_id, app_secret):
+def get_wechat_access_token(app_id, app_secret, now_time):
     # appId
     app_id = app_id
     # appSecret
@@ -39,7 +39,7 @@ def get_wechat_access_token(app_id, app_secret):
     try:
         access_token = requests.get(post_url).json()['access_token']
     except KeyError:
-        logging.error('获取access_token失败，请检查app_id和app_secret是否正确')
+        logging.error(now_time + '获取access_token失败，请检查app_id和app_secret是否正确')
         os.system("pause")
         sys.exit(1)
     return access_token
@@ -91,13 +91,13 @@ def send_wechat_message(to_user, now_time, title, detail, url, wx_post_url):
     }
     response = requests.post(wx_post_url, headers=headers, json=data).json()
     if response["errcode"] == 40037:
-        logging.error('推送消息失败，请检查模板id是否正确')
+        logging.error(now_time + '推送消息失败，请检查模板id是否正确')
     elif response["errcode"] == 40036:
-        logging.error('推送消息失败，请检查模板id是否为空')
+        logging.error(now_time + '推送消息失败，请检查模板id是否为空')
     elif response["errcode"] == 40003:
-        logging.error('推送消息失败，请检查微信号是否正确')
+        logging.error(now_time + '推送消息失败，请检查微信号是否正确')
     elif response["errcode"] == 0:
-        logging.info('推送消息成功')
+        logging.info(now_time + '推送消息成功')
     else:
         logging.info(response)
 
@@ -135,7 +135,7 @@ def main():
         if not test:
             write_yaml_value(data)
         if read_yaml('send_type') == 'wechat':
-            ACCESS_TOKEN = get_wechat_access_token(read_yaml('app_id'), read_yaml('app_secret'))
+            ACCESS_TOKEN = get_wechat_access_token(read_yaml('app_id'), read_yaml('app_secret'), now_time)
             wx_post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + ACCESS_TOKEN
             for i in read_yaml('to_user_ids'):
                 send_wechat_message(i, now_time, title, detail, jump_url, wx_post_url)

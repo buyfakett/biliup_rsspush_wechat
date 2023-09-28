@@ -19,6 +19,10 @@ ip: 0.0.0.0
 app_id: wxd4072
 # appSecret
 app_secret: 64ff49a3631c
+# 发送的用户的id
+to_user_ids:
+- 212
+- 34343
 
 # 检测主播的动态title
 title:

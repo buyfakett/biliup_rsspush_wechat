@@ -10,9 +10,6 @@ else:
     logging.basicConfig(level=logging.INFO)
 
 
-# 发送的用户的id
-to_user_ids = ["oSZL15qqZnwLMnR5XrNIdpPQfh7E"]
-
 # 公众号的跳转链接
 jump_url = "https://space.bilibili.com/" + str(read_yaml('uid')) + "/dynamic"
 
@@ -140,7 +137,7 @@ def main():
         if read_yaml('send_type') == 'wechat':
             ACCESS_TOKEN = get_wechat_access_token(read_yaml('app_id'), read_yaml('app_secret'))
             wx_post_url = "https://api.weixin.qq.com/cgi-bin/message/template/send?access_token=" + ACCESS_TOKEN
-            for i in to_user_ids:
+            for i in read_yaml('to_user_ids'):
                 send_wechat_message(i, now_time, title, detail, jump_url, wx_post_url)
         elif read_yaml('send_type') == 'ding':
             send_ding_message(read_yaml('ding_access_token'), read_yaml('ding_keyword'), now_time, title, link)

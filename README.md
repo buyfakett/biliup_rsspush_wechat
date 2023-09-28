@@ -14,24 +14,33 @@ cd biliup_rsspush_wechat
 ```
 
 ```bash
-vi main.py
+vi config.yaml
 
-# 检测的主播的uid
-uid = "11073"
+# 检测的主播
+uid: 11073
+# 检测的时间(分钟）
+detection_time: 1 * 60
 
+# 钉钉推送还是微信测试号推送(钉钉：ding，微信测试号：wechat)
+send_type: ding
+# 钉钉参数
+access_token: 259
+# 钉钉自定义关键词
+ding_keyword: test
+
+# 微信测试号参数
 # 模板id
-template_id = "fE51ho"
-
-# rsshub服务的ip（当前服务器的ip，可以填127.0.0.1）
-ip = ""
-
+template_id: fE51ho
+# rsshub服务的ip
+ip: 0.0.0.0
 # appId
-app_id = "wxd4072"
+app_id: wxd4072
 # appSecret
-app_secret = "64ff49a3631c"
-
+app_secret: 64ff49a3631c
 # 发送的用户的id
-to_user_ids = ["oSZLh7E"]
+to_user_ids:
+- 212
+- 34343
 
 
 
@@ -64,4 +73,6 @@ docker-compose up -d
 
 觉得作者写的不错的话可以支持一下作者，请作者喝 咖啡哦~
 
-![](./pay_img/ali.webp)![](./pay_img/wechat.webp)
+| 支付宝                                                       | 微信                                                         |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| ![alipay](./pay_img/wechat.webp) | ![wechat](./pay_img/ali.webp) |

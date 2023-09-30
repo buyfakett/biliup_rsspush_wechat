@@ -14,8 +14,11 @@ cd biliup_rsspush_wechat
 ```
 
 ```bash
-vi config.yaml
+cp config.yaml.bak config.yaml
 
+vi config.yaml
+```
+```yaml
 # 检测的主播
 uid: 11073
 # 检测的时间(分钟）
@@ -42,6 +45,9 @@ to_user_ids:
 - 212
 - 34343
 
+# 检测主播的动态的时间戳
+timestamp:
+```
 
 
 
@@ -49,7 +55,7 @@ to_user_ids:
 {{title_title.DATA}} {{title.DATA}} {{now_time_title.DATA}} {{now_time.DATA}} {{detail_title.DATA}} {{detail.DATA}} 
 ```
 
-### 启动容器
+### 构建并启动容器
 
 ```bash
 docker-compose up -d

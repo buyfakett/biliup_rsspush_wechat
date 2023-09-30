@@ -1,6 +1,7 @@
 #coding=utf-8
 import random, datetime, os, sys, json, requests, logging, feedparser, schedule, time
 from common.yaml_util import read_yaml, read_all_yaml, write_yaml_value
+from datetime import datetime as dt
 
 test = False
 
@@ -21,10 +22,13 @@ def get_rss():
     post_data_detail = d['entries'][0]['summary']
     post_data_title = d['entries'][0]['title']
     post_data_link = d['entries'][0]['link']
+    time = d['updated']
+    timestamp = int(dt.strptime(time, '%a, %d %b %Y %H:%M:%S %Z').timestamp())
     post_data = {
         "title": post_data_title,
         "detail": post_data_detail,
-        "link": post_data_link
+        "timestamp": timestamp,
+        "link": post_data_link,
     }
     return json.dumps(post_data, ensure_ascii=False)
 
@@ -126,12 +130,13 @@ def main():
     title = rss_data['title']
     detail = rss_data['detail']
     link = rss_data['link']
+    timestamp = rss_data['timestamp']
 
     if title == read_yaml('title'):
         logging.info(now_time + "主播没有发新动态")
     else:
         data = read_all_yaml()
-        data.update({'title': title})
+        data.update({'timestamp': timestamp})
         if not test:
             write_yaml_value(data)
         if read_yaml('send_type') == 'wechat':

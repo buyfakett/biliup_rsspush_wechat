@@ -9,6 +9,6 @@ services:
     biliup_rsspush_wechat:
         container_name: 'biliup_rsspush_wechat'
         restart: always
+        build: .
         volumes:
             - './:/app'
-        image: buyfakett/biliup_rsspush_wechat:latest
